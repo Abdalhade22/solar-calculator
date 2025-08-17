@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Solar Altitude Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background: #f9f9f9;
+    }
+    h2 { color: #333; }
+    .container {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 500px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    label { display: block; margin-top: 10px; }
+    input {
+      padding: 6px;
+      width: 100%;
+      margin-top: 4px;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px;
+      background: #0077cc;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover { background: #005fa3; }
+    pre {
+      background: #eee;
+      padding: 10px;
+      border-radius: 6px;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Solar Altitude Calculator</h2>
+    <label>Day</label>
+    <input type="number" id="day" value="21">
+    <label>Month</label>
+    <input type="number" id="month" value="6">
+    <label>Hour</label>
+    <input type="number" id="hour" value="12">
+    <label>Minute</label>
+    <input type="number" id="minute" value="38">
+    <label>Latitude (°)</label>
+    <input type="number" id="latitude" value="32">
+    <label>Local Longitude (°)</label>
+    <input type="number" id="longLocal" value="36">
+    <label>Standard Longitude (°)</label>
+    <input type="number" id="longStandard" value="30">
+    <label>Daylight Saving (1=yes, 0=no)</label>
+    <input type="number" id="dst" value="1">
+    <label>Equation of Time ET (minutes)</label>
+    <input type="number" id="ET" value="-1.7">
+    <button onclick="calculate()">Calculate</button>
+
+    <pre id="results"></pre>
+  </div>
+
+<script>
+function deg2rad(deg) { return deg * Math.PI / 180.0; }
+function rad2deg(rad) { return rad * 180.0 / Math.PI; }
+function dayNumber(day, month) {
+  const daysInMonth = [0,31,28,31,30,31,30,31,31,30,31,30,31];
+  let total = 0;
+  for (let i = 1; i < month; i++) total += daysInMonth[i];
+  return total + day;
+}
+function declination(N) {
+  return 23.45 * Math.sin(deg2rad(360.0 * (284 + N) / 365.0));
+}
+function clamp(x, lo, hi) {
+  return Math.max(lo, Math.min(hi, x));
+}
+function calculate() {
+  const day = parseInt(document.getElementById("day").value);
+  const month = parseInt(document.getElementById("month").value);
+  let hour = parseInt(document.getElementById("hour").value);
+  const minute = parseFloat(document.getElementById("minute").value);
+  const latitude = parseFloat(document.getElementById("latitude").value);
+  const longLocal = parseFloat(document.getElementById("longLocal").value);
+  const longStandard = parseFloat(document.getElementById("longStandard").value);
+  const dst = parseInt(document.getElementById("dst").value);
+  const ET = parseFloat(document.getElementById("ET").value);
+
+  if (dst === 1) hour -= 1;
+
+  const localTime = hour + minute / 60.0;
+  const solarTime = localTime + (4 * (longLocal - longStandard) + ET) / 60.0;
+  const H = 15 * (solarTime - 12);
+  const N = dayNumber(day, month);
+  const delta = declination(N);
+
+  let sin_beta = Math.cos(deg2rad(latitude)) * Math.cos(deg2rad(delta)) * Math.cos(deg2rad(H)) +
+                 Math.sin(deg2rad(latitude)) * Math.sin(deg2rad(delta));
+  sin_beta = clamp(sin_beta, -1, 1);
+  const beta = rad2deg(Math.asin(sin_beta));
+
+  let output = "";
+  output += "Day of year (N) = " + N + "\n";
+  output += "Solar Declination (delta) = " + delta.toFixed(4) + "°\n";
+  output += "Solar Time = " + solarTime.toFixed(4) + " h\n";
+  output += "Hour Angle (H) = " + H.toFixed(4) + "°\n";
+  output += "Solar Elevation Angle (beta) = " + beta.toFixed(4) + "°\n";
+
+  document.getElementById("results").textContent = output;
+}
+</script>
+</body>
+</html>
