@@ -5,32 +5,91 @@
   <title>Solar Altitude Calculator</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(to right, #6a11cb, #2575fc);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
       padding: 0;
+      height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      background: linear-gradient(to right, #6a11cb, #2575fc);
     }
 
     .container {
       background: #fff;
       border-radius: 20px;
-      padding: 30px;
-      width: 500px;
+      padding: 40px;
+      width: 520px;
       box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+      animation: slideIn 1s ease-in-out;
     }
 
-    h2 { text-align: center; color: #2575fc; margin-bottom: 20px; }
+    h2 {
+      text-align: center;
+      color: #2575fc;
+      margin-bottom: 30px;
+      font-size: 28px;
+      animation: fadeIn 1s ease-in-out;
+    }
 
-    input { width: 100%; padding: 10px; margin: 8px 0; border-radius: 6px; border: 1px solid #ccc; }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      transition: 0.3s;
+    }
 
-    button { width: 100%; padding: 12px; border: none; border-radius: 8px; background: #6a11cb; color: white; font-size: 18px; cursor: pointer; }
-    button:hover { background: #2575fc; }
+    input:focus {
+      border-color: #6a11cb;
+      box-shadow: 0 0 8px rgba(106,17,203,0.3);
+      outline: none;
+    }
 
-    #results { margin-top: 20px; background: #f0f0f0; padding: 15px; border-radius: 10px; font-size: 16px; }
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      background: #6a11cb;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      transition: 0.3s;
+      margin-top: 20px;
+    }
+
+    button:hover {
+      background: #2575fc;
+      transform: scale(1.05);
+    }
+
+    #results {
+      margin-top: 25px;
+      background: #f0f0f0;
+      padding: 20px;
+      border-radius: 12px;
+      font-size: 16px;
+      color: #333;
+      min-height: 120px;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    .high { color: #ff8c00; font-weight: bold; }    /* high sun */
+    .medium { color: #228b22; font-weight: bold; }  /* medium sun */
+    .low { color: #ff0000; font-weight: bold; }     /* low sun */
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-50px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
   </style>
 </head>
 <body>
@@ -104,12 +163,14 @@ function calculate(){
   let phi = rad2deg(Math.acos(cos_phi));
   if(H>0) phi = 360 - phi;
 
+  let betaClass = beta>45 ? 'high' : beta>15 ? 'medium' : 'low';
+
   let output = "";
   output += `Day of year (N): ${N}\n`;
   output += `Solar Altitude (β): ${beta.toFixed(2)}°\n`;
   output += `Solar Azimuth (φ): ${phi.toFixed(2)}°\n`;
 
-  document.getElementById("results").textContent = output;
+  document.getElementById("results").innerHTML = `<span class="${betaClass}">${output}</span>`;
 }
 </script>
 </body>
