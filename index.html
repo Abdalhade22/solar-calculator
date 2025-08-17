@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>Solar Altitude Calculator</title>
+  <title>حاسب زاوية ارتفاع الشمس</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -43,45 +43,42 @@
 </head>
 <body>
   <div class="container">
-    <h2>Solar Altitude Calculator</h2>
-    <label>Day</label>
-    <input type="number" id="day" value="21">
-    <label>Month</label>
-    <input type="number" id="month" value="6">
-    <label>Hour</label>
-    <input type="number" id="hour" value="12">
-    <label>Minute</label>
-    <input type="number" id="minute" value="38">
-    <label>Latitude (°)</label>
-    <input type="number" id="latitude" value="32">
-    <label>Local Longitude (°)</label>
-    <input type="number" id="longLocal" value="36">
-    <label>Standard Longitude (°)</label>
-    <input type="number" id="longStandard" value="30">
-    <label>Daylight Saving (1=yes, 0=no)</label>
-    <input type="number" id="dst" value="1">
-    <label>Equation of Time ET (minutes)</label>
-    <input type="number" id="ET" value="-1.7">
-    <button onclick="calculate()">Calculate</button>
+    <h2>حاسب زاوية ارتفاع الشمس</h2>
+
+    <label>اليوم</label>
+    <input type="number" id="day" placeholder="أدخل اليوم">
+
+    <label>الشهر</label>
+    <input type="number" id="month" placeholder="أدخل الشهر">
+
+    <label>الساعة</label>
+    <input type="number" id="hour" placeholder="أدخل الساعة">
+
+    <label>الدقيقة</label>
+    <input type="number" id="minute" placeholder="أدخل الدقيقة">
+
+    <label>خط العرض (°)</label>
+    <input type="number" id="latitude" placeholder="أدخل خط العرض">
+
+    <label>خط الطول المحلي (°)</label>
+    <input type="number" id="longLocal" placeholder="أدخل خط الطول المحلي">
+
+    <label>خط الطول القياسي (°)</label>
+    <input type="number" id="longStandard" placeholder="أدخل خط الطول القياسي">
+
+    <label>التوقيت الصيفي (1=نعم، 0=لا)</label>
+    <input type="number" id="dst" placeholder="1 أو 0">
+
+    <label>معادلة الزمن (ET) بالدقائق</label>
+    <input type="number" id="ET" placeholder="أدخل قيمة ET">
+
+    <button onclick="calculate()">احسب</button>
 
     <pre id="results"></pre>
   </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js"></script>
 <script>
-function deg2rad(deg) { return deg * Math.PI / 180.0; }
-function rad2deg(rad) { return rad * 180.0 / Math.PI; }
-function dayNumber(day, month) {
-  const daysInMonth = [0,31,28,31,30,31,30,31,31,30,31,30,31];
-  let total = 0;
-  for (let i = 1; i < month; i++) total += daysInMonth[i];
-  return total + day;
-}
-function declination(N) {
-  return 23.45 * Math.sin(deg2rad(360.0 * (284 + N) / 365.0));
-}
-function clamp(x, lo, hi) {
-  return Math.max(lo, Math.min(hi, x));
-}
 function calculate() {
   const day = parseInt(document.getElementById("day").value);
   const month = parseInt(document.getElementById("month").value);
@@ -98,22 +95,23 @@ function calculate() {
   const localTime = hour + minute / 60.0;
   const solarTime = localTime + (4 * (longLocal - longStandard) + ET) / 60.0;
   const H = 15 * (solarTime - 12);
-  const N = dayNumber(day, month);
-  const delta = declination(N);
 
-  let sin_beta = Math.cos(deg2rad(latitude)) * Math.cos(deg2rad(delta)) * Math.cos(deg2rad(H)) +
-                 Math.sin(deg2rad(latitude)) * Math.sin(deg2rad(delta));
-  sin_beta = clamp(sin_beta, -1, 1);
-  const beta = rad2deg(Math.asin(sin_beta));
+  const date = new Date(2025, month - 1, day, hour, minute);
+  const sunPos = SunCalc.getPosition(date, latitude, longLocal);
 
   let output = "";
-  output += "Day of year (N) = " + N + "\n";
-  output += "Solar Declination (delta) = " + delta.toFixed(4) + "°\n";
-  output += "Solar Time = " + solarTime.toFixed(4) + " h\n";
-  output += "Hour Angle (H) = " + H.toFixed(4) + "°\n";
-  output += "Solar Elevation Angle (beta) = " + beta.toFixed(4) + "°\n";
+  output += "اليوم من السنة (N) = " + dayNumber(day, month) + "\n";
+  output += "زاوية ارتفاع الشمس (β) = " + (sunPos.altitude * 180 / Math.PI).toFixed(4) + "°\n";
+  output += "زاوية الارتفاع المحسوبة (β) = " + H.toFixed(4) + "°\n";
 
   document.getElementById("results").textContent = output;
+}
+
+function dayNumber(day, month) {
+  const daysInMonth = [0,31,28,31,30,31,30,31,31,30,31,30,31];
+  let total = 0;
+  for (let i = 1; i < month; i++) total += daysInMonth[i];
+  return total + day;
 }
 </script>
 </body>
