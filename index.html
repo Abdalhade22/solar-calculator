@@ -4,184 +4,164 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Solar Position Calculator</title>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
   <style>
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: linear-gradient(to bottom, #000010, #0a0a40, #ffcc00);
-      color: #fff;
-      text-align: center;
-      overflow-x: hidden;
+      background: linear-gradient(to bottom, #00111a, #00334d);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      padding: 20px;
     }
     h1 {
-      font-size: 2rem;
-      margin: 20px;
-      text-shadow: 0 0 10px #ffcc00;
+      text-align: center;
+      color: #ffcc00;
+      margin-bottom: 20px;
+      text-shadow: 0 0 10px #ffaa00;
     }
     .container {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      padding: 20px;
-      max-width: 1000px;
-      margin: auto;
-    }
-    .card {
       background: rgba(255, 255, 255, 0.1);
       padding: 20px;
       border-radius: 15px;
-      box-shadow: 0 0 15px rgba(255, 255, 0, 0.5);
-      backdrop-filter: blur(10px);
+      box-shadow: 0 0 20px rgba(255, 204, 0, 0.5);
+      max-width: 500px;
+      width: 100%;
     }
     label {
-      display: flex;
-      align-items: center;
-      margin: 10px 0;
+      display: block;
+      margin: 10px 0 5px;
       font-weight: bold;
     }
-    input {
-      flex: 1;
+    input, select {
+      width: 100%;
       padding: 8px;
-      margin-left: 10px;
       border-radius: 8px;
       border: none;
-      outline: none;
+      margin-bottom: 15px;
     }
     button {
-      margin-top: 15px;
-      padding: 10px 20px;
-      font-size: 16px;
+      width: 100%;
+      padding: 10px;
       border: none;
       border-radius: 10px;
-      background: #ffcc00;
+      background: #ffaa00;
       color: #000;
-      font-weight: bold;
+      font-size: 16px;
       cursor: pointer;
-      box-shadow: 0 0 10px #ffcc00;
       transition: 0.3s;
     }
     button:hover {
-      background: #ffaa00;
-      box-shadow: 0 0 20px #ffaa00;
+      background: #ffcc33;
+      box-shadow: 0 0 10px #ffcc00;
     }
-    #results {
+    .results {
       margin-top: 20px;
-      font-size: 1.2rem;
-      line-height: 1.8rem;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 10px;
     }
-    #bgCanvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-    }
-    audio {
-      display: none;
+    .results p {
+      margin: 8px 0;
+      font-size: 16px;
     }
   </style>
 </head>
 <body>
-  <h1>☀ Solar Position Calculator ☀</h1>
-
-  <!-- Background Music -->
-  <audio autoplay loop>
-    <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
-  </audio>
-
+  <h1>🌞 Solar Position Calculator</h1>
   <div class="container">
-    <div class="card">
-      <h2>Enter Data</h2>
-      <label>📅 Day: <input type="number" id="day" min="1" max="31"></label>
-      <label>📅 Month: <input type="number" id="month" min="1" max="12"></label>
-      <label>⏰ Hour: <input type="number" id="hour" min="0" max="23"></label>
-      <label>⏱ Minute: <input type="number" id="minute" min="0" max="59"></label>
-      <label>🌍 Latitude: <input type="number" id="latitude" step="0.01"></label>
-      <label>📍 Local Longitude: <input type="number" id="longLocal" step="0.01"></label>
-      <label>📍 Standard Longitude: <input type="number" id="longStandard" step="0.01"></label>
-      <label>☀ Equation of Time (min): <input type="number" id="ET" step="0.1"></label>
-      <label>🕒 DST (1=yes,0=no): <input type="number" id="dst" min="0" max="1"></label>
-      <button onclick="calculate()">Calculate</button>
-    </div>
-    <div class="card">
-      <h2>Results</h2>
-      <div id="results">Results will appear here...</div>
-    </div>
+    <label>Day:</label>
+    <input type="number" id="day" placeholder="Enter day">
+
+    <label>Month:</label>
+    <input type="number" id="month" placeholder="Enter month">
+
+    <label>Local Time (Hour):</label>
+    <input type="number" id="hour" placeholder="Enter hour">
+
+    <label>Minutes:</label>
+    <input type="number" id="minute" placeholder="Enter minutes">
+
+    <label>Latitude (L):</label>
+    <input type="number" id="latitude" placeholder="Enter latitude">
+
+    <label>Local Longitude:</label>
+    <input type="number" id="longLocal" placeholder="Enter local longitude">
+
+    <label>Standard Longitude:</label>
+    <input type="number" id="longStandard" placeholder="Enter standard longitude">
+
+    <label>Daylight Saving Time:</label>
+    <select id="dst">
+      <option value="0">No</option>
+      <option value="1">Yes</option>
+    </select>
+
+    <label>Equation of Time (ET) in minutes:</label>
+    <input type="number" id="ET" placeholder="Enter ET">
+
+    <button onclick="calculate()">Calculate</button>
+
+    <div class="results" id="results"></div>
   </div>
 
-  <!-- 3D Background -->
-  <canvas id="bgCanvas"></canvas>
-
   <script>
-    function deg2rad(deg) { return deg * Math.PI / 180; }
-    function rad2deg(rad) { return rad * 180 / Math.PI; }
+    function deg2rad(deg) {
+      return deg * Math.PI / 180.0;
+    }
+    function rad2deg(rad) {
+      return rad * 180.0 / Math.PI;
+    }
     function dayNumber(day, month) {
-      let daysInMonth = [0,31,28,31,30,31,30,31,31,30,31,30,31];
+      const daysInMonth = [0,31,28,31,30,31,30,31,31,30,31,30,31];
       let total = 0;
       for (let i = 1; i < month; i++) total += daysInMonth[i];
       return total + day;
     }
     function declination(N) {
-      return 23.45 * Math.sin(deg2rad(360 * (284 + N) / 365));
+      return 23.45 * Math.sin(deg2rad(360.0 * (284 + N) / 365.0));
     }
     function calculate() {
-      let day = +document.getElementById("day").value;
-      let month = +document.getElementById("month").value;
-      let hour = +document.getElementById("hour").value;
-      let minute = +document.getElementById("minute").value;
-      let latitude = +document.getElementById("latitude").value;
-      let longLocal = +document.getElementById("longLocal").value;
-      let longStandard = +document.getElementById("longStandard").value;
-      let ET = +document.getElementById("ET").value;
-      let dst = +document.getElementById("dst").value;
+      const day = parseInt(document.getElementById("day").value);
+      const month = parseInt(document.getElementById("month").value);
+      let hour = parseInt(document.getElementById("hour").value);
+      const minute = parseInt(document.getElementById("minute").value);
+      const latitude = parseFloat(document.getElementById("latitude").value);
+      const longLocal = parseFloat(document.getElementById("longLocal").value);
+      const longStandard = parseFloat(document.getElementById("longStandard").value);
+      const dst = parseInt(document.getElementById("dst").value);
+      const ET = parseFloat(document.getElementById("ET").value);
 
-      if (dst === 1) hour -= 1;
-      let localTime = hour + minute / 60;
-      let solarTime = localTime + (4 * (longLocal - longStandard) + ET) / 60;
-      let H = 15 * (solarTime - 12);
-      let N = dayNumber(day, month);
-      let delta = declination(N);
+      if(dst === 1) hour -= 1;
+      const localTime = hour + minute / 60.0;
+      const solarTime = localTime + (4 * (longLocal - longStandard) + ET) / 60.0;
+      const H = 15 * (solarTime - 12);
+      const N = dayNumber(day, month);
+      const delta = declination(N);
 
-      let sin_beta = Math.cos(deg2rad(latitude)) * Math.cos(deg2rad(delta)) * Math.cos(deg2rad(H)) +
-                     Math.sin(deg2rad(latitude)) * Math.sin(deg2rad(delta));
-      if (sin_beta > 1) sin_beta = 1;
-      if (sin_beta < -1) sin_beta = -1;
-      let beta = rad2deg(Math.asin(sin_beta));
+      let sin_beta = Math.cos(deg2rad(latitude)) * Math.cos(deg2rad(delta)) * Math.cos(deg2rad(H))
+                   + Math.sin(deg2rad(latitude)) * Math.sin(deg2rad(delta));
+      sin_beta = Math.min(1, Math.max(-1, sin_beta));
+      const beta = rad2deg(Math.asin(sin_beta));
 
       let cos_phi = (Math.sin(deg2rad(beta)) * Math.sin(deg2rad(latitude)) - Math.sin(deg2rad(delta))) /
                     (Math.cos(deg2rad(beta)) * Math.cos(deg2rad(latitude)));
-      if (cos_phi > 1) cos_phi = 1;
-      if (cos_phi < -1) cos_phi = -1;
+      cos_phi = Math.min(1, Math.max(-1, cos_phi));
       let phi = rad2deg(Math.acos(cos_phi));
       if (H > 0) phi = 360 - phi;
 
-      document.getElementById("results").innerHTML =
-        `<b>Day of year (N):</b> ${N}<br>
-         <b>Declination (δ):</b> ${delta.toFixed(2)}°<br>
-         <b>Solar Time:</b> ${solarTime.toFixed(2)} h<br>
-         <b>Hour Angle (H):</b> ${H.toFixed(2)}°<br>
-         <b>Solar Elevation (β):</b> ${beta.toFixed(2)}°<br>
-         <b>Solar Azimuth (φ):</b> ${phi.toFixed(2)}°`;
+      document.getElementById("results").innerHTML = `
+        <p><b>Day of Year (N):</b> ${N}</p>
+        <p><b>Solar Declination (δ):</b> ${delta.toFixed(2)}°</p>
+        <p><b>Solar Time:</b> ${solarTime.toFixed(2)} hours</p>
+        <p><b>Hour Angle (H):</b> ${H.toFixed(2)}°</p>
+        <p><b>Solar Elevation Angle (β):</b> ${beta.toFixed(2)}°</p>
+        <p><b>Solar Azimuth (φ):</b> ${phi.toFixed(2)}°</p>
+      `;
     }
-
-    // 3D background with rotating sun
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({canvas: document.getElementById("bgCanvas")});
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    const textureLoader = new THREE.TextureLoader();
-    const sunTexture = textureLoader.load("https://threejs.org/examples/textures/planets/sun.jpg");
-    const sun = new THREE.Mesh(new THREE.SphereGeometry(5, 64, 64), new THREE.MeshBasicMaterial({map: sunTexture}));
-    scene.add(sun);
-    camera.position.z = 15;
-    function animate() {
-      requestAnimationFrame(animate);
-      sun.rotation.y += 0.002;
-      renderer.render(scene, camera);
-    }
-    animate();
   </script>
 </body>
 </html>
