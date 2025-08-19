@@ -203,14 +203,6 @@
     .tag.warn { color: #ffe7b7; border-color: #ffb00055; background: #ffb0001a; }
     .tag.danger { color: #ffd0da; border-color: #ff5a7a55; background: #ff5a7a1a; }
 
-    /* Footer note */
-    .foot {
-      margin-top: 8px;
-      color: var(--muted);
-      font-size: 12px;
-      text-align: center;
-    }
-
     /* Responsive */
     @media (max-width: 880px){
       body { overflow: auto; }
@@ -276,8 +268,6 @@
         <button class="btn" id="calcBtn"><i class="fa-solid fa-bolt"></i> Calculate</button>
         <button class="btn ghost" id="clearBtn"><i class="fa-solid fa-eraser"></i> Clear</button>
       </div>
-
-      <p class="foot">Uses the same formulas as your C++ version (no external libraries) for matching results.</p>
     </section>
 
     <!-- Results -->
@@ -417,107 +407,4 @@
     }
 
     // Buttons
-    document.getElementById('calcBtn').addEventListener('click', calculate);
-    document.getElementById('clearBtn').addEventListener('click', () => {
-      ['day','month','hour','minute','latitude','longLocal','longStandard','ET','dst'].forEach(id => {
-        document.getElementById(id).value = '';
-      });
-      ['nVal','decVal','solTimeVal','hVal','betaVal','phiVal'].forEach(id => {
-        document.getElementById(id).textContent = '—';
-      });
-      flashBetaTag('', 'waiting…');
-    });
-
-    /* ---------- Three.js background ---------- */
-    const space = document.getElementById('space');
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
-    space.appendChild(renderer.domElement);
-
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(55, window.innerWidth/window.innerHeight, 0.1, 2000);
-    camera.position.set(0, 0, 38);
-
-    // Stars
-    const starsCount = 1200;
-    const starGeo = new THREE.BufferGeometry();
-    const positions = new Float32Array(starsCount * 3);
-    for (let i = 0; i < starsCount; i++) {
-      const r = 400 + Math.random() * 800;
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos((Math.random() * 2) - 1);
-      const x = r * Math.sin(phi) * Math.cos(theta);
-      const y = r * Math.sin(phi) * Math.sin(theta);
-      const z = r * Math.cos(phi);
-      positions.set([x, y, z], i * 3);
-    }
-    starGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    const starMat = new THREE.PointsMaterial({ size: 1.2, sizeAttenuation: true, color: 0xffffff, transparent: true, opacity: 0.9 });
-    const stars = new THREE.Points(starGeo, starMat);
-    scene.add(stars);
-
-    // Sun (emissive)
-    const sunGeo = new THREE.SphereGeometry(8, 64, 64);
-    const sunMat = new THREE.MeshStandardMaterial({
-      color: 0xff9d00,
-      emissive: 0xff7a00,
-      emissiveIntensity: 1.8,
-      roughness: 0.35,
-      metalness: 0.0
-    });
-    const sun = new THREE.Mesh(sunGeo, sunMat);
-    sun.position.set(-10, 4, -10);
-    scene.add(sun);
-
-    // Subtle corona (sprite glow)
-    const glowTexture = (() => {
-      const size = 256;
-      const canvas = document.createElement('canvas');
-      canvas.width = canvas.height = size;
-      const ctx = canvas.getContext('2d');
-      const grd = ctx.createRadialGradient(size/2, size/2, 10, size/2, size/2, size/2);
-      grd.addColorStop(0, 'rgba(255,255,200,0.85)');
-      grd.addColorStop(0.35, 'rgba(255,180,0,0.45)');
-      grd.addColorStop(0.7, 'rgba(255,120,0,0.18)');
-      grd.addColorStop(1, 'rgba(255,80,0,0.02)');
-      ctx.fillStyle = grd;
-      ctx.fillRect(0,0,size,size);
-      const tex = new THREE.CanvasTexture(canvas);
-      tex.minFilter = THREE.LinearFilter;
-      return tex;
-    })();
-    const glowMat = new THREE.SpriteMaterial({ map: glowTexture, color: 0xffffff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
-    const glow = new THREE.Sprite(glowMat);
-    glow.scale.set(42, 42, 1);
-    sun.add(glow);
-
-    // Light
-    const light = new THREE.PointLight(0xffa040, 6, 0, 2);
-    light.position.copy(sun.position);
-    scene.add(light);
-
-    // Subtle camera drift
-    let t = 0;
-    function animate(){
-      requestAnimationFrame(animate);
-      t += 0.0018;
-      sun.rotation.y += 0.0024;
-      stars.rotation.y += 0.00025;
-      stars.rotation.x += 0.00008;
-      camera.position.x = 38 * Math.sin(t * 0.6);
-      camera.position.z = 38 * Math.cos(t * 0.6);
-      camera.lookAt(0, 0, 0);
-      renderer.render(scene, camera);
-    }
-    animate();
-
-    // Resize
-    window.addEventListener('resize', () => {
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-    });
-  </script>
-</body>
-</html>
+    document.getElementById('calcBtn').addEvent
