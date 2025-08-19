@@ -3,208 +3,208 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Solar Calculator</title>
+  <title>Solar Position Calculator</title>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
   <style>
     body {
       margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: radial-gradient(circle at top, #1a1a1a, #000000);
-      color: #f9f9f9;
-      overflow-x: hidden;
+      font-family: Arial, sans-serif;
+      background: #000;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-
     header {
       text-align: center;
       padding: 20px;
-      background: rgba(255, 204, 0, 0.1);
-      color: #ffcc00;
+    }
+    h1 {
       font-size: 2rem;
-      letter-spacing: 2px;
-      text-shadow: 0 0 10px #ffcc00;
+      margin-bottom: 10px;
     }
-
-    .container {
-      max-width: 1000px;
-      margin: 20px auto;
+    .form-container {
+      background: rgba(255, 255, 255, 0.1);
       padding: 20px;
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 20px;
-    }
-
-    .card {
-      background: rgba(255, 255, 255, 0.05);
       border-radius: 15px;
-      padding: 20px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.5);
-      backdrop-filter: blur(5px);
-      transition: transform 0.3s;
+      box-shadow: 0 0 15px rgba(255, 255, 0, 0.7);
+      max-width: 400px;
+      width: 90%;
+      margin-bottom: 20px;
     }
-    .card:hover {
-      transform: translateY(-5px);
+    label {
+      display: block;
+      margin: 10px 0 5px;
+      font-weight: bold;
     }
-
-    .card h3 {
-      margin-top: 0;
-      color: #ffcc00;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .card input, .card select {
+    input, select {
       width: 100%;
-      padding: 10px;
+      padding: 8px;
       border-radius: 8px;
       border: none;
-      margin-top: 10px;
-      font-size: 1rem;
+      outline: none;
+      margin-bottom: 10px;
     }
-
     button {
-      display: block;
       width: 100%;
-      padding: 15px;
-      font-size: 1.2rem;
-      margin: 30px auto;
-      background: #ffcc00;
-      color: #000;
+      padding: 10px;
       border: none;
       border-radius: 10px;
+      background: linear-gradient(45deg, orange, gold);
+      color: #000;
+      font-weight: bold;
       cursor: pointer;
       transition: 0.3s;
     }
     button:hover {
-      background: #ffaa00;
+      transform: scale(1.05);
+      background: linear-gradient(45deg, gold, orange);
     }
-
     .results {
-      margin-top: 30px;
+      margin-top: 20px;
       background: rgba(255, 255, 255, 0.1);
-      padding: 20px;
-      border-radius: 15px;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(255,255,0,0.6);
+      text-align: left;
+      width: 90%;
+      max-width: 400px;
     }
-
-    .results h2 {
-      text-align: center;
-      color: #ffcc00;
-    }
-
-    .results p {
-      font-size: 1.1rem;
-      margin: 10px 0;
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -1;
     }
   </style>
 </head>
 <body>
-  <header>🌞 Solar Position Calculator 🌍</header>
+  <header>
+    <h1>☀️ Solar Position Calculator</h1>
+    <p>Enter your data to calculate solar angles</p>
+  </header>
 
-  <div class="container">
-    <div class="form-grid">
-
-      <div class="card">
-        <h3>📅 Date</h3>
-        <input type="number" id="day" placeholder="Day (1-31)">
-        <input type="number" id="month" placeholder="Month (1-12)">
-      </div>
-
-      <div class="card">
-        <h3>⏰ Local Time</h3>
-        <input type="number" id="hour" placeholder="Hour (0-23)">
-        <input type="number" id="minute" placeholder="Minute (0-59)">
-      </div>
-
-      <div class="card">
-        <h3>📍 Location</h3>
-        <input type="number" id="latitude" placeholder="Latitude">
-        <input type="number" id="longLocal" placeholder="Local Longitude">
-        <input type="number" id="longStandard" placeholder="Standard Longitude">
-      </div>
-
-      <div class="card">
-        <h3>⚡ Settings</h3>
-        <select id="dst">
-          <option value="0">Daylight Saving: No</option>
-          <option value="1">Daylight Saving: Yes</option>
-        </select>
-        <input type="number" id="ET" placeholder="Equation of Time (min)">
-      </div>
-    </div>
-
-    <button onclick="calculate()">🌞 Calculate Solar Angles</button>
-
-    <div class="results" id="results">
-      <h2>Results</h2>
-      <p id="N"></p>
-      <p id="delta"></p>
-      <p id="solarTime"></p>
-      <p id="H"></p>
-      <p id="beta"></p>
-      <p id="phi"></p>
-    </div>
+  <div class="form-container">
+    <label>Day:</label>
+    <input type="number" id="day" placeholder="Enter day (1-31)">
+    
+    <label>Month:</label>
+    <input type="number" id="month" placeholder="Enter month (1-12)">
+    
+    <label>Hour:</label>
+    <input type="number" id="hour" placeholder="Enter hour (0-23)">
+    
+    <label>Minute:</label>
+    <input type="number" id="minute" placeholder="Enter minutes (0-59)">
+    
+    <label>Latitude:</label>
+    <input type="number" id="latitude" placeholder="Enter latitude">
+    
+    <label>Local Longitude:</label>
+    <input type="number" id="longLocal" placeholder="Enter local longitude">
+    
+    <label>Standard Longitude:</label>
+    <input type="number" id="longStandard" placeholder="Enter standard longitude">
+    
+    <label>Daylight Saving Time:</label>
+    <select id="dst">
+      <option value="0">No</option>
+      <option value="1">Yes</option>
+    </select>
+    
+    <label>Equation of Time (ET) in minutes:</label>
+    <input type="number" id="ET" placeholder="Enter ET value">
+    
+    <button onclick="calculate()">Calculate</button>
   </div>
 
+  <div class="results" id="results"></div>
+
+  <!-- موسيقى خفيفة تشتغل أول ما يفتح الموقع -->
+  <audio autoplay loop>
+    <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_3d4a7f6f4b.mp3?filename=space-sound-ambient-110199.mp3" type="audio/mpeg">
+  </audio>
+
   <script>
-    function deg2rad(deg) { return deg * Math.PI / 180.0; }
-    function rad2deg(rad) { return rad * 180.0 / Math.PI; }
+    function deg2rad(deg) { return deg * Math.PI / 180; }
+    function rad2deg(rad) { return rad * 180 / Math.PI; }
 
     function dayNumber(day, month) {
-      let daysInMonth = [0,31,28,31,30,31,30,31,31,30,31,30,31];
+      const daysInMonth = [0,31,28,31,30,31,30,31,31,30,31,30,31];
       let total = 0;
-      for (let i = 1; i < month; i++) total += daysInMonth[i];
-      total += day;
-      return total;
+      for(let i = 1; i < month; i++) total += daysInMonth[i];
+      return total + day;
     }
 
     function declination(N) {
-      return 23.45 * Math.sin(deg2rad(360.0 * (284 + N) / 365.0));
+      return 23.45 * Math.sin(deg2rad(360 * (284 + N) / 365));
     }
 
     function calculate() {
-      let day = parseInt(document.getElementById("day").value);
-      let month = parseInt(document.getElementById("month").value);
-      let hour = parseInt(document.getElementById("hour").value);
-      let minute = parseInt(document.getElementById("minute").value);
-      let latitude = parseFloat(document.getElementById("latitude").value);
-      let longLocal = parseFloat(document.getElementById("longLocal").value);
-      let longStandard = parseFloat(document.getElementById("longStandard").value);
-      let dst = parseInt(document.getElementById("dst").value);
-      let ET = parseFloat(document.getElementById("ET").value);
+      const day = +document.getElementById("day").value;
+      const month = +document.getElementById("month").value;
+      const hour = +document.getElementById("hour").value;
+      const minute = +document.getElementById("minute").value;
+      const latitude = +document.getElementById("latitude").value;
+      const longLocal = +document.getElementById("longLocal").value;
+      const longStandard = +document.getElementById("longStandard").value;
+      const dst = +document.getElementById("dst").value;
+      const ET = +document.getElementById("ET").value;
 
-      if (dst === 1) hour -= 1;
+      let adjustedHour = hour;
+      if (dst === 1) adjustedHour -= 1;
 
-      let localTime = hour + minute / 60.0;
-      let solarTime = localTime + (4 * (longLocal - longStandard) + ET) / 60.0;
-      let H = 15 * (solarTime - 12);
+      const localTime = adjustedHour + minute / 60.0;
+      const solarTime = localTime + (4 * (longLocal - longStandard) + ET) / 60.0;
+      const H = 15 * (solarTime - 12);
 
-      let N = dayNumber(day, month);
-      let delta = declination(N);
+      const N = dayNumber(day, month);
+      const delta = declination(N);
 
       let sin_beta = Math.cos(deg2rad(latitude)) * Math.cos(deg2rad(delta)) * Math.cos(deg2rad(H))
                    + Math.sin(deg2rad(latitude)) * Math.sin(deg2rad(delta));
-      if (sin_beta > 1) sin_beta = 1;
-      if (sin_beta < -1) sin_beta = -1;
+      sin_beta = Math.min(1, Math.max(-1, sin_beta));
+      const beta = rad2deg(Math.asin(sin_beta));
 
-      let beta = rad2deg(Math.asin(sin_beta));
-
-      let cos_phi = (Math.sin(deg2rad(beta)) * Math.sin(deg2rad(latitude)) - Math.sin(deg2rad(delta))) /
-                    (Math.cos(deg2rad(beta)) * Math.cos(deg2rad(latitude)));
-      if (cos_phi > 1) cos_phi = 1;
-      if (cos_phi < -1) cos_phi = -1;
-
+      let cos_phi = (Math.sin(deg2rad(beta)) * Math.sin(deg2rad(latitude)) - Math.sin(deg2rad(delta)))
+                  / (Math.cos(deg2rad(beta)) * Math.cos(deg2rad(latitude)));
+      cos_phi = Math.min(1, Math.max(-1, cos_phi));
       let phi = rad2deg(Math.acos(cos_phi));
       if (H > 0) phi = 360 - phi;
 
-      document.getElementById("N").innerText = "📅 Day of year (N): " + N;
-      document.getElementById("delta").innerText = "☀️ Solar Declination (δ): " + delta.toFixed(2) + "°";
-      document.getElementById("solarTime").innerText = "⏳ Solar Time: " + solarTime.toFixed(2) + " hours";
-      document.getElementById("H").innerText = "🕐 Hour Angle (H): " + H.toFixed(2) + "°";
-      document.getElementById("beta").innerText = "🌅 Solar Elevation (β): " + beta.toFixed(2) + "°";
-      document.getElementById("phi").innerText = "🧭 Solar Azimuth (φ): " + phi.toFixed(2) + "°";
+      document.getElementById("results").innerHTML = `
+        <h3>Results 🌍</h3>
+        <p><b>Day of Year (N):</b> ${N}</p>
+        <p><b>Solar Declination (δ):</b> ${delta.toFixed(2)}°</p>
+        <p><b>Solar Time:</b> ${solarTime.toFixed(2)} hrs</p>
+        <p><b>Hour Angle (H):</b> ${H.toFixed(2)}°</p>
+        <p><b>Solar Elevation (β):</b> ${beta.toFixed(2)}°</p>
+        <p><b>Solar Azimuth (φ):</b> ${phi.toFixed(2)}°</p>
+      `;
     }
+
+    // خلفية 3D للشمس
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    const textureLoader = new THREE.TextureLoader();
+    const sunTexture = textureLoader.load("https://threejsfundamentals.org/threejs/resources/images/sun.jpg");
+    const geometry = new THREE.SphereGeometry(5, 64, 64);
+    const material = new THREE.MeshBasicMaterial({ map: sunTexture });
+    const sun = new THREE.Mesh(geometry, material);
+    scene.add(sun);
+
+    camera.position.z = 15;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      sun.rotation.y += 0.002;
+      renderer.render(scene, camera);
+    }
+    animate();
   </script>
 </body>
 </html>
